@@ -22,11 +22,12 @@ import java.util.*
 import com.viro.core.AmbientLight
 import com.viro.core.Material
 import com.viro.core.Quad
+import com.viro.core.AnimationTransaction
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val PANORAMA_DEMO = true
+    private val PANORAMA_DEMO = false
 
     // this is a downscaling trick we have found to reduce some rendering problems inside Viro
     //
@@ -295,6 +296,7 @@ class MainActivity : AppCompatActivity() {
         rootNode!!.addChildNode(obj3d)
 
         obj3d!!.setScale(Vector(VIRO_RENDER_SCALE, VIRO_RENDER_SCALE, VIRO_RENDER_SCALE))
+        obj3d!!.clickListener = NodeOnClickListener()
 
     }
 
@@ -448,13 +450,46 @@ class MainActivity : AppCompatActivity() {
 
     inner class NodeOnClickListener: ClickListener{
         override fun onClick(p0: Int, p1: Node?, p2: Vector?) {
-            Toast.makeText(this@MainActivity, p1!!.name, Toast.LENGTH_LONG).show()
-            Log.d("###", "camera position: ${camera!!.position} | planet: ${p1.name} | planet rotation: ${p1.rotationQuaternionRealtime}")
+            if (PANORAMA_DEMO == false) {
+                Log.d("###", "camera position before: ${cameraNode!!.positionRealtime}")
+                moveCameraAndRotate(Vector(2f, 2f, 2f), Vector(0f, 0f, 0f))
+            }else{
+                Toast.makeText(this@MainActivity, p1!!.name, Toast.LENGTH_LONG).show()
+                Log.d("###", "camera position: ${camera!!.position} | planet: ${p1.name} | planet rotation: ${p1.rotationQuaternionRealtime}")
+            }
         }
 
         override fun onClickState(p0: Int, p1: Node?, p2: ClickState?, p3: Vector?) {
-            Log.d("###", "click state: ${p2.toString()}")
+            //Log.d("###", "click state: ${p2.toString()}")
         }
 
+    }
+
+    /**
+     * move camera to new position and adjust rotation accordingly
+     */
+    private fun moveCameraAndRotate(cameraNewPosition: Vector, lookAtPosition: Vector){
+        // Grab new forward vectors facing the lookAtPosition for our Camera
+        val cameraLastForward = viroView!!.lastCameraForwardRealtime
+        val cameraNewForward = lookAtPosition.subtract(cameraNewPosition.scale(VIRO_RENDER_SCALE))
+
+        // Calculate and apply the needed rotation delta to be applied to our Camera.
+        val rotationDelta = Quaternion.makeRotationFromTo(cameraLastForward.normalize(), cameraNewForward.normalize())
+        val newRot = rotationDelta.toEuler().add(viroView!!.lastCameraRotationEulerRealtime)
+
+        // Animate the Camera to the desired point (optional, you can also just set the position).
+        AnimationTransaction.begin()
+        AnimationTransaction.setAnimationDuration(2000)
+        AnimationTransaction.setTimingFunction(AnimationTimingFunction.Linear)
+        AnimationTransaction.setListener(CameraAnimationListener())
+        cameraNode!!.setPosition(cameraNewPosition.scale(VIRO_RENDER_SCALE))
+        cameraNode!!.setRotation(Quaternion(newRot))
+        AnimationTransaction.commit()
+    }
+
+    inner class CameraAnimationListener: AnimationTransaction.Listener{
+        override fun onFinish(p0: AnimationTransaction?) {
+            Log.d("###", "camera position after : ${cameraNode!!.positionRealtime}")
+        }
     }
 }
