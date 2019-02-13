@@ -135,36 +135,42 @@ class MainActivity : AppCompatActivity() {
             val earthBitmap = getLayout(planetPosition)
 
             var planetNodePosition: Vector? = null
+            var boxNodePosition: Vector? = null
             var planetScale: Vector? = null
             when(planetPosition){
                 0 -> {
                     planetNodePosition = Vector(0f, 0f, 3f)
+                    boxNodePosition = Vector(0f, 0f, 2.95f)
                     planetScale = Vector(2f, 2f, 2f)
                 }
                 1 -> {
                     planetNodePosition = Vector(1f, 0f, -3f)
+                    boxNodePosition = Vector(1f, 0f, -2.95f)
                     planetScale = Vector(2f, 2f, 2f)
                 }
                 2 -> {
                     planetNodePosition = Vector(0f, 0f, -4f)
+                    boxNodePosition = Vector(0f, 0f, -3.95f)
                     planetScale = Vector(2f, 2f, 2f)
                 }
                 3 -> {
                     planetNodePosition = Vector(3f, 0f, 0f)
+                    boxNodePosition = Vector(2.95f, 0f, 0f)
                     planetScale = Vector(2f, 2f, 2f)
                 }
                 4 -> {
                     planetNodePosition = Vector(-3f, 0f, 0f)
+                    boxNodePosition = Vector(-2.95f, 0f, 0f)
                     planetScale = Vector(2f, 2f, 2f)
                 }
             }
-            setupPlanetTexture(earthBitmap, planetPosition, planetNodePosition!!, planetScale!!)
+            setupPlanetTexture(earthBitmap, planetPosition, planetNodePosition!!, boxNodePosition!!, planetScale!!)
             planetPosition++
         }
 
     }
 
-    private fun setupPlanetTexture(bitmap: Bitmap, planetPosition: Int, planetNodePosition: Vector, planetScale: Vector){
+    private fun setupPlanetTexture(bitmap: Bitmap, planetPosition: Int, planetNodePosition: Vector, boxNodePosition: Vector, planetScale: Vector){
         val texture = Texture(bitmap, Texture.Format.RGBA8, true, true)
 
         // Set the Texture to be used on our surface in 3D.
@@ -174,11 +180,11 @@ class MainActivity : AppCompatActivity() {
         val surface = Quad(1f, 1f)
         surface.materials = Arrays.asList(material)
 
-        setupPlanetNode(surface, planetPosition, planetNodePosition, planetScale)
+        setupPlanetNode(surface, planetPosition, planetNodePosition, planetScale, boxNodePosition)
 
     }
 
-    private fun setupPlanetNode(surface: Quad, planetPosition: Int, planetNodePosition: Vector, planetScale: Vector){
+    private fun setupPlanetNode(surface: Quad, planetPosition: Int, planetNodePosition: Vector, planetScale: Vector, boxNodePosition: Vector){
         planetNode = Node()
         planetNode!!.setPosition(planetNodePosition)
         planetNode!!.setScale(planetScale)
@@ -193,7 +199,7 @@ class MainActivity : AppCompatActivity() {
 
         //setup 3D cubes/boxes for handling clicks
         boxNode = createBoxNode()
-        boxNode!!.setPosition(planetNodePosition)
+        boxNode!!.setPosition(boxNodePosition)
 
         //set name for box node
         boxNode!!.name = planetNames[planetPosition]
@@ -214,7 +220,7 @@ class MainActivity : AppCompatActivity() {
 
         val material = Material.MaterialBuilder()
             .diffuseColor(Color.TRANSPARENT)
-            .transparencyMode(Material.TransparencyMode.RGB_ZERO)
+            .transparencyMode(Material.TransparencyMode.A_ONE)
             .build()
 
         box.materials = Arrays.asList(material)
