@@ -21,6 +21,7 @@ import java.io.InputStream
 import java.util.*
 import com.viro.core.AmbientLight
 import com.viro.core.Material
+import com.viro.core.Quad
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private var lastTouchY: Float = 0.toFloat()
 
     private var planetNode: Node? = null
+    private var boxNode: Node? = null
     private var planetNames = arrayOf("mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -189,11 +191,39 @@ class MainActivity : AppCompatActivity() {
         planetNode!!.transformBehaviors = EnumSet.of(Node.TransformBehavior.BILLBOARD_Y)
         Log.d("###", "rotation: ${planetNode!!.rotationEulerRealtime} | planetNodePosition: $planetNodePosition | position RT: ${planetNode!!.positionRealtime} | name: ${planetNode!!.name}")
 
+        //setup 3D cubes/boxes for handling clicks
+        boxNode = createBoxNode()
+        boxNode!!.setPosition(planetNodePosition)
+
+        //set name for box node
+        boxNode!!.name = planetNames[planetPosition]
+
         //set click listener
-        planetNode!!.clickListener = NodeOnClickListener()
+        boxNode!!.clickListener = NodeOnClickListener()
 
         //add node to scene
         scene!!.rootNode.addChildNode(planetNode)
+        scene!!.rootNode.addChildNode(boxNode)
+
+    }
+
+    private fun createBoxNode(): Node {
+        boxNode = Node()
+
+        val box = Box(1f, 1f, 1f)
+
+        val material = Material.MaterialBuilder()
+            .diffuseColor(Color.TRANSPARENT)
+            .transparencyMode(Material.TransparencyMode.RGB_ZERO)
+            .build()
+
+        box.materials = Arrays.asList(material)
+
+        boxNode!!.geometry = box
+
+        boxNode!!.tag = planetNode!!.name + "box"
+
+        return boxNode as Node
     }
 
     private fun getLayout(position: Int): Bitmap{
