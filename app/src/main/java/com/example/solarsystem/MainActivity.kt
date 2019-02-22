@@ -23,6 +23,7 @@ import com.viro.core.AmbientLight
 import com.viro.core.Material
 import com.viro.core.Quad
 import com.viro.core.AnimationTransaction
+import kotlinx.android.synthetic.main.fragment_canvas.view.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -87,6 +88,17 @@ class MainActivity : AppCompatActivity() {
         viroView!!.setCameraListener{ position: Vector, rotation: Vector, zoom: Vector ->
             //Toast.makeText(this@MainActivity, rotation.toString(), Toast.LENGTH_SHORT).show()
             //Log.d("###", "%.2f".format(rotation.y))
+        }
+
+        if(!PANORAMA_DEMO){
+            val view = View.inflate(this, R.layout.fragment_canvas, viroView)
+            view.btnToggleDraw.setOnClickListener {
+                Log.d("###", "clicked")
+                if (view.canvas.visibility == View.GONE)
+                    view.canvas.visibility = View.VISIBLE
+                else
+                    view.canvas.visibility = View.GONE
+            }
         }
 
         setContentView(viroView)
